@@ -26,6 +26,8 @@ import javax.swing.JSpinner;
 public class MonteCarloSimulationPi {
 
     private JFrame frmEstimatePi;
+    JSpinner inputNumPoints;
+    JTextPane txtResult;
 
     /**
      * Launch the application.
@@ -54,70 +56,78 @@ public class MonteCarloSimulationPi {
      */
     private void initialize() {
         frmEstimatePi = new JFrame();
+        frmEstimatePi.getContentPane().setForeground(new Color(0, 0, 0));
         frmEstimatePi.setBackground(new Color(220, 220, 220));
-        frmEstimatePi.getContentPane().setBackground(new Color(220, 220, 220));
+        frmEstimatePi.getContentPane().setBackground(new Color(211, 211, 211));
         frmEstimatePi.setTitle("Estimate Pi Using A Monte Carlo Simulation");
         frmEstimatePi.setResizable(false);
-        frmEstimatePi.setBounds(100, 100, 600, 700);
+        frmEstimatePi.setBounds(100, 100, 580, 700);
         frmEstimatePi.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frmEstimatePi.getContentPane().setLayout(null);
         
         SimulationPanel diagram = new SimulationPanel();
         int dSize = 550;
-        int center = (int) (frmEstimatePi.getWidth() / 2) - (dSize/2);
-        diagram.setBounds(center, 100, dSize, dSize);
+        int center = (int) ((frmEstimatePi.getWidth()-1) - dSize)/2;
+        diagram.setBounds(center, 110, dSize, dSize);
+        diagram.setBackground(new Color(250,250,250));
+        //RGB: 30,30,30
         frmEstimatePi.getContentPane().add(diagram);
         
         JLabel lblNumberOfPoints = new JLabel("Points =");
+        lblNumberOfPoints.setForeground(new Color(0, 0, 0));
         lblNumberOfPoints.setHorizontalAlignment(SwingConstants.LEFT);
         lblNumberOfPoints.setFont(new Font("Consolas", Font.BOLD, 11));
-        lblNumberOfPoints.setBounds(224, 70, 50, 20);
+        lblNumberOfPoints.setBounds(385, 50, 50, 20);
         frmEstimatePi.getContentPane().add(lblNumberOfPoints);
         
         JLabel lblPi = new JLabel(" \u03C0 =");
+        lblPi.setForeground(new Color(0, 0, 0));
         lblPi.setHorizontalAlignment(SwingConstants.LEFT);
         lblPi.setFont(new Font("Consolas", Font.BOLD, 11));
-        lblPi.setBounds(10, 70, 30, 20);
+        lblPi.setBounds(405, 18, 30, 20);
         frmEstimatePi.getContentPane().add(lblPi);
         
-        JTextPane txtDescription = new JTextPane();
-        txtDescription.setBackground(Color.WHITE);
-        txtDescription.setEditable(false);
-        txtDescription.setBounds(50, 70, 150, 20);
-        frmEstimatePi.getContentPane().add(txtDescription);
+        String title = "Estimate Pi Using a Monte Carlo Simulation";
+        String desc = "If <em>n</em> points are randomly placed in a square inscribed with a circle, then an estimation"
+                + " for the value of pi can be computed by multiplying the number of <em>m</em> points in the circle by 4"
+                + " and dividing the product by <em>n</em>.";
+        JLabel lblDescription = new JLabel("<html><strong>" + title + "</strong><br><br>" + desc + "</html>");
+        lblDescription.setForeground(new Color(0, 0, 0));
+        lblDescription.setFont(new Font("Consolas", Font.PLAIN, 11));
+        lblDescription.setBackground(new Color(230, 230, 250));
+        lblDescription.setBounds(15, 10, 364, 91);
+        frmEstimatePi.getContentPane().add(lblDescription);
         
-        SpinnerModel sm = new SpinnerNumberModel(0,0,2000000,2); //Sets the limit for the spinner
-        JSpinner inputNumPoints = new JSpinner(sm);
+        txtResult = new JTextPane();
+        txtResult.setText("123");
+        txtResult.setForeground(new Color(0,51,102));
+        txtResult.setOpaque(false);
+        txtResult.setToolTipText("The estimation of Pi");
+        txtResult.setBackground(new Color(245, 245, 245));
+        txtResult.setEditable(false);
+        txtResult.setBounds(445, 18, 120, 20);
+        frmEstimatePi.getContentPane().add(txtResult);
+        
+        SpinnerModel sm = new SpinnerNumberModel(0,0,2000000000,100); //Sets the limit for the spinner 2,000,000,000
+        inputNumPoints = new JSpinner(sm);
         inputNumPoints.setToolTipText("Number of points to randomly generate");
-        inputNumPoints.setBounds(284, 69, 150, 20);
+        inputNumPoints.setBounds(445, 49, 120, 20);
         frmEstimatePi.getContentPane().add(inputNumPoints);
         
         JButton btnRun = new JButton("Run Simulation");
         btnRun.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
-                int points = (int) inputNumPoints.getValue();
-                diagram.runSimulation(txtDescription,points);
+                diagram.repaint();
             }
         });
         btnRun.setFont(new Font("Consolas", Font.PLAIN, 12));
-        btnRun.setBounds(444, 70, 140, 20);
+        btnRun.setBounds(384, 81, 180, 20);
         frmEstimatePi.getContentPane().add(btnRun);
     }
     //Creates the diagram and runs the simulation
     class SimulationPanel extends JPanel {
         //Set up initial diagram
         public void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            Graphics2D g2 = (Graphics2D) g;
-            
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(Color.darkGray);
-            g2.setStroke(new BasicStroke(1));
-            g2.drawRect(0, 0, this.getWidth()-1, this.getHeight()-1);
-            g2.drawOval(0, 0, this.getWidth()-1, this.getHeight()-1);
-        }
-        //Run the simulation using points entered
-        public void runSimulation(JTextPane txtPane,int points) {
             final int width = this.getWidth()-1;
             final int height = this.getHeight()-1;
             //x and y of the center
@@ -129,38 +139,49 @@ public class MonteCarloSimulationPi {
             double PiEstimate = 0;
             String output;
             
-            //Initialize the objects needed
-            Graphics g = this.getGraphics();
+            super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g;
             Random randGen = new Random();
-            StyledDocument doc = txtPane.getStyledDocument();
+            StyledDocument doc = txtResult.getStyledDocument();
             
-            //Add the random points
+            txtResult.setText("");
+            //Render the square and the circle
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(Color.darkGray);
             g2.setStroke(new BasicStroke(1));
-            g2.drawLine(cX, cY, cX, cY);
-            for(int i = 0; i < points; i++) {
-                rX = randGen.nextInt(width-1)+1;
-                rY = randGen.nextInt(height-1)+1;
-                
-                //If inside of the circle when x1 is circle radius x: (x1-x2)^2 + (y1-y2)^2 <= r^2
-                if(Math.pow(cX-rX, 2) + Math.pow(cY-rY, 2) <= Math.pow(cX, 2)) {
-                    g2.setColor(Color.blue);
-                    inside++;
-                } else {
-                    g2.setColor(Color.orange);
-                }
-                g2.drawLine(rX, rY, rX, rY);
-            }
-            PiEstimate = (double)(4.0*inside) / points;
-            output = Double.toString(PiEstimate);
+            g2.drawRect(0, 0, this.getWidth()-1, this.getHeight()-1);
+            g2.drawOval(0, 0, this.getWidth()-1, this.getHeight()-1);
             
-            //Output the solution
-            try {
-                doc.insertString(0, output, null);
-            } catch (BadLocationException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            int points = (int) inputNumPoints.getValue();
+            //Only run if points is a positive number
+            if(points > 0) {
+                g2.setStroke(new BasicStroke(1));
+                //Calculate and draw the random points
+                for(int i = 0; i < points; i++) {
+                    rX = randGen.nextInt(width-1)+1;
+                    rY = randGen.nextInt(height-1)+1;
+                    
+                    //If inside of the circle when x1 is circle radius x: (x1-x2)^2 + (y1-y2)^2 <= r^2
+                    if(Math.pow(cX-rX, 2) + Math.pow(cY-rY, 2) <= Math.pow(cX, 2)) {;
+                        g2.setColor(new Color(0,51,102));
+                        inside++;
+                    } else {
+                        g2.setColor(new Color(252,191,73));
+                    }
+                    g2.drawLine(rX, rY, rX, rY);
+                }
+                PiEstimate = (double)(4.0*inside) / points; //Compute Pi Estimation
+                output = Double.toString(PiEstimate);
+                
+                //Output the solution
+                try {
+                    doc.insertString(0, output, null);
+                } catch (BadLocationException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
+            
         }
     }
 }
